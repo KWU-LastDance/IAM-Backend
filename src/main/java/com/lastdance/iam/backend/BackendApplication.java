@@ -1,13 +1,13 @@
-package com.kwu.lastdance.iambackend;
+package com.lastdance.iam.backend;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class IamBackendApplication {
+public class BackendApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(IamBackendApplication.class, args);
+		SpringApplication.run(BackendApplication.class, args);
 	}
 
 }

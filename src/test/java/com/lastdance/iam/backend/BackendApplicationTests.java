@@ -1,10 +1,10 @@
-package com.kwu.lastdance.iambackend;
+package com.lastdance.iam.backend;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class IamBackendApplicationTests {
+class BackendApplicationTests {
 
 	@Test
 	void contextLoads() {
