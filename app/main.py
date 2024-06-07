@@ -1,8 +1,7 @@
 from fastapi import FastAPI
 
-from app.api.v1.endpoints import hello_controller
+from app.api.v1.endpoints import products_controller
 
 app = FastAPI()
 
-app.include_router(hello_controller.router, prefix="/hello", tags=["hello"])
-
+app.include_router(products_controller.router, prefix="/products", tags=["products"])
