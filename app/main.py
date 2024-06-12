@@ -2,7 +2,7 @@ import pytz
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.v1.endpoints import products_controller, monitoring_controller
+from app.api.v1.endpoints import products_controller, monitoring_controller, apple_classification_controller
 from app.db.session import init_db
 
 app = FastAPI()
@@ -27,3 +27,4 @@ async def startup():
 
 app.include_router(products_controller.router, prefix="/products", tags=["products"])
 app.include_router(monitoring_controller.router, prefix="/monitoring-data", tags=["monitoring-data"])
+app.include_router(apple_classification_controller.router, prefix="/dt", tags=["dt"])
