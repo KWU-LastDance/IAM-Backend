@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 
 from app.db.session import get_db
 from app.repositories.products_repository import ProductsRepository
-from app.schemas.products import Product, ProductCreate
+from app.schemas.products import Product, ProductCreate, ProductUpdate
 from app.services.products_service import ProductsService
 
 router = APIRouter()
@@ -28,8 +28,8 @@ async def get_product_by_id(product_id: int, db: Session = Depends(get_db)):
 
 
 @router.patch("/{product_id}", response_model=Product)
-async def update_product(product_id: int, product_create: ProductCreate, db: Session = Depends(get_db)):
-    return products_service.update(product_id, product_create, db)
+async def update_product(product_id: int, product_update: ProductUpdate, db: Session = Depends(get_db)):
+    return products_service.update(product_id, product_update, db)
 
 
 @router.delete("/{product_id}")
