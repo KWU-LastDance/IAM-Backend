@@ -1,4 +1,4 @@
-FROM tiangolo/uvicorn-gunicorn-fastapi:python3.11
+FROM tiangolo/uvicorn-gunicorn-fastapi:python3.11-slim
 
 COPY requirements.txt /app/
 RUN pip install --cache-dir --upgrade -r requirements.txt
