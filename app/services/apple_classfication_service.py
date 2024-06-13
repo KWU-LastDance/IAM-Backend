@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 
 import random
 
+from app.models.apple_classification import QualityEnum
 from app.schemas.apple_classification import StockStatusResponse, AppleClassificationCreate, \
     AppleClassificationRottenResponse, AppleClassificationQualityResponse, AppleClassificationWeightResponse
 from app.schemas.transactions import TransactionsCreate
@@ -20,11 +21,11 @@ class AppleClassificationService:
         self.stock_rotten = 0
 
     def check_stock(self, image_class, db: Session):
-        if image_class == "special":
+        if image_class == QualityEnum.special:
             self.stock_special += 1
-        elif image_class == "good":
+        elif image_class == QualityEnum.good:
             self.stock_good += 1
-        elif image_class == "bad":
+        elif image_class == QualityEnum.bad:
             self.stock_bad += 1
 
         if self.stock_special >= 20:
