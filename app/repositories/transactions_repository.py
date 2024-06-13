@@ -45,30 +45,31 @@ class TransactionsRepository:
 
     def auto_create(self, apple: TransactionsCreate, db: Session):
         try:
-            with db.begin():
-                transactions = Transactions(type='store', quantity=1, variation=apple.variation, automated=True,
-                                            memo="IAM 시스템에 의해 자동으로 입고된 품목입니다.")
-                db.add(transactions)
-                db.flush()
-                product = db.query(Products).filter(Products.id == apple.product_id).first()
-                if not product:
-                    raise HTTPException(status_code=404, detail=f"Product with id {apple.product_id} not found")
+            transactions = Transactions(type='store', quantity=1, variation=apple.variation, automated=True,
+                                        memo="IAM 시스템에 의해 자동으로 입고된 품목입니다.")
+            db.add(transactions)
+            db.flush()
+            product = db.query(Products).filter(Products.id == apple.product_id).first()
+            if not product:
+                raise HTTPException(status_code=404, detail=f"Product with id {apple.product_id} not found")
 
-                transactions_detail = TransactionsDetail(
-                    transaction_id=transactions.id,
-                    product_id=apple.product_id,
-                    previous_stock=product.stock,
-                    current_stock=product.stock + apple.variation
-                )
+            transactions_detail = TransactionsDetail(
+                transaction_id=transactions.id,
+                product_id=apple.product_id,
+                previous_stock=product.stock,
+                current_stock=product.stock + apple.variation
+            )
 
-                product.stock = transactions_detail.current_stock
-                transactions.variation += apple.variation
-                db.add(transactions_detail)
-                db.flush()
-                db.refresh(transactions)
+            product.stock = transactions_detail.current_stock
+            db.add(transactions_detail)
+            db.flush()
+
+            db.refresh(transactions)
+            db.commit()
             return transactions
         except Exception as e:
             db.rollback()
+            print(str(e))
             raise HTTPException(status_code=500, detail=str(e))
 
     def get_transactions_by_period(self, start, end, db):
