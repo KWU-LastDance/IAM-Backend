@@ -20,5 +20,8 @@ class ProductsService:
     def update(self, product_id: int, product_update: ProductUpdate, db: Session):
         return self.product_repository.update(product_id, product_update, db)
 
+    def update_stock(self, product_id: int, quantity: int, db: Session):
+        return self.product_repository.update_stock(product_id, quantity, db)
+
     def delete(self, product_id, db):
         self.product_repository.delete(product_id, db)
