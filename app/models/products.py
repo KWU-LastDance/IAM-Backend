@@ -1,9 +1,10 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, Boolean, Float, DateTime
+from sqlalchemy import Column, Integer, String, Boolean, DateTime
 import datetime
 from sqlalchemy.orm import relationship
 from app.db.base import Base
 from app.models.rotten_classification import RottenClassification
 from app.models.quality_classification import QualityClassification
+from app.models.transactions import TransactionsDetail
 
 
 class Products(Base):
@@ -13,6 +14,7 @@ class Products(Base):
     name = Column(String)
     description = Column(String)
     category = Column(String)
+    stock = Column(Integer)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.datetime.utcnow)
     deleted_at = Column(DateTime, default=None)
@@ -21,3 +23,4 @@ class Products(Base):
 
 Products.rotten_classification = relationship('RottenClassification', back_populates='products', uselist=False)
 Products.quality_classification = relationship('QualityClassification', back_populates='products', uselist=False)
+Products.transactions_detail = relationship('TransactionsDetail', back_populates='products', uselist=False)

@@ -10,7 +10,7 @@ class QualityEnum(PyEnum):
     special = 'special'
     good = 'good'
     bad = 'bad'
-
+    none = None
 
 class AppleClassification(Base):
     __tablename__ = 'apple_classification'

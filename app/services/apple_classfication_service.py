@@ -7,26 +7,35 @@ import random
 
 from app.schemas.apple_classification import StockStatusResponse, AppleClassificationCreate, \
     AppleClassificationRottenResponse, AppleClassificationQualityResponse, AppleClassificationWeightResponse
+from app.schemas.transactions import TransactionsCreate
 
 
 class AppleClassificationService:
     def __init__(self, apple_classification_repository):
         self.apple_classification_repository = apple_classification_repository
+        self.transactions_repository = None
         self.stock_special = 0
         self.stock_good = 0
         self.stock_bad = 0
         self.stock_rotten = 0
 
-    def check_stock(self):
+    def check_stock(self, image_class, db: Session):
+        if image_class == "special":
+            self.stock_special += 1
+        elif image_class == "good":
+            self.stock_good += 1
+        elif image_class == "bad":
+            self.stock_bad += 1
+
         if self.stock_special >= 20:
             self.stock_special -= 20
-            # TODO: 사과 - 특상 입고 처리
+            self.transactions_repository.auto_create(TransactionsCreate(product_id=1, variation=20), db)
         if self.stock_good >= 20:
             self.stock_good -= 20
-            # TODO: 사과 - 상 입고 처리
+            self.transactions_repository.auto_create(TransactionsCreate(product_id=2, variation=20), db)
         if self.stock_bad >= 20:
             self.stock_bad -= 20
-            # TODO: 사과 - 하 입고 처리
+            self.transactions_repository.auto_create(TransactionsCreate(product_id=3, variation=20), db)
 
     def create_apple_metadata(self):
         hashed_uuid = hashlib.sha256(uuid.uuid4().bytes).hexdigest()[:16]
@@ -35,7 +44,7 @@ class AppleClassificationService:
         if not rotten:
             image_class = random.choices(["special", "good", "bad"], weights=[25, 45, 30], k=1)[0]
         else:
-            image_class = None
+            image_class = "none"
         quality = image_class
         return {
             "apple_code": hashed_uuid,
@@ -47,12 +56,8 @@ class AppleClassificationService:
 
     def make_new_apple(self, db: Session):
         raw_data = AppleClassificationCreate(**self.create_apple_metadata())
-        if raw_data.image_class == "special":
-            self.stock_special += 1
-        elif raw_data.image_class == "good":
-            self.stock_good += 1
-        elif raw_data.image_class == "bad":
-            self.stock_bad += 1
+        if raw_data.rotten:
+            self.stock_rotten += 1
         return self.apple_classification_repository.create(raw_data, db).apple_code
 
     def get_apple_rotten(self, apple_code: str, db: Session):
@@ -65,6 +70,7 @@ class AppleClassificationService:
 
     def get_apple_quality(self, apple_code: str, db: Session):
         data = self.apple_classification_repository.get_status_by_apple_code(apple_code, db)
+        self.check_stock(data.image_class, db)
         return AppleClassificationQualityResponse(
             apple_code=apple_code,
             rotten=data.rotten,

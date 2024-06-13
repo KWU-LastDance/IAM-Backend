@@ -32,3 +32,8 @@ class ProductsRepository:
             from datetime import datetime
             product.deleted_at = datetime.now()
             db.commit()
+
+    def update_stock(self, product_id: int, quantity: int, db: Session):
+        db.query(Products).filter(Products.id == product_id).update({'stock': quantity})
+        db.commit()
+        return db.query(Products).filter(Products.id == product_id).first()
