@@ -14,7 +14,7 @@ class Products(Base):
     name = Column(String)
     description = Column(String)
     category = Column(String)
-    stock = Column(Integer)
+    stock = Column(Integer, default=0)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.datetime.utcnow)
     deleted_at = Column(DateTime, default=None)
