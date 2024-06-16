@@ -27,6 +27,20 @@ services:
     depends_on:
       - 'db'
 
+  streamlit:
+    build:
+      context: .
+      dockerfile: './dashboard/Dockerfile'
+    ports:
+      - '8501:8501'
+    volumes:
+      - '.:/dashboard'
+    restart: 'always'
+    networks:
+      - 'iam-network'
+    depends_on:
+      - 'backend'
+
 networks:
   iam-network:
     driver: 'bridge'

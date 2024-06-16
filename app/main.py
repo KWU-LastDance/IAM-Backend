@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.responses import RedirectResponse
 
 from app.api.v1.endpoints import products_controller, monitoring_controller, apple_classification_controller, \
     transactions_controller
@@ -20,9 +21,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 @app.on_event("startup")
 async def startup():
     init_db()
+
+
+@app.get("/dashboard")
+def read_dashboard():
+    return RedirectResponse(url="http://localhost:8501")
 
 
 app.include_router(products_controller.router, prefix="/products", tags=["products"])
