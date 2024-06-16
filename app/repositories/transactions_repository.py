@@ -1,4 +1,7 @@
+import pytz
 from sqlalchemy.orm import Session
+
+from datetime import datetime
 
 from app.models.products import Products
 from app.models.transactions import Transactions, TransactionsDetail
@@ -11,6 +14,7 @@ class TransactionsRepository:
         try:
             with db.begin():
                 transactions = Transactions(type=transactions_type, quantity=0, variation=0, automated=False, memo="")
+                transactions.timestamp = datetime.now(tz=pytz.timezone('Asia/Seoul')).replace(microsecond=0)
                 db.add(transactions)
                 db.flush()  # ID를 얻기 위해 flush 호출
                 for data in raw_data:
@@ -95,3 +99,21 @@ class TransactionsRepository:
             raise HTTPException(status_code=404, detail=f"No details found for transaction ID {transaction_id}")
 
         return transaction_details
+
+    def get_inventory_history(self, product_id, type, start_date, end_date, automated, db):
+        query = (db.query(Transactions, TransactionsDetail, Products)
+                 .join(TransactionsDetail, Transactions.id == TransactionsDetail.transaction_id)
+                 .join(Products, Products.id == TransactionsDetail.product_id)
+                 .filter(Products.id == product_id))
+
+        if type:
+            query = query.filter(Transactions.type == type)
+        if start_date:
+            query = query.filter(Transactions.timestamp >= start_date)
+        if end_date:
+            query = query.filter(Transactions.timestamp <= end_date)
+        if automated is not None:
+            query = query.filter(Transactions.automated == automated)
+
+        result = query.all()
+        return result

@@ -40,3 +40,12 @@ class TransactionsDetailCreate(TransactionsDetailBase):
 
 class TransactionsDetailWithProduct(TransactionsDetailBase):
     product_name: str
+
+
+class InventoryHistoryResponse(BaseModel):
+    product_name: str
+    type: str
+    previous_stock: int
+    current_stock: int
+    timestamp: datetime
+    automated: bool
