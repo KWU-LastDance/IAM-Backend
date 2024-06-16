@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from fastapi import HTTPException
 
 from app.repositories.transactions_repository import TransactionsRepository
-from app.schemas.transactions import TransactionsCreate
+from app.schemas.transactions import TransactionsCreate, InventoryHistoryResponse
 
 
 class TransactionsService:
@@ -27,3 +27,24 @@ class TransactionsService:
 
     def release_transaction(self, transaction: list[TransactionsCreate], db: Session):
         return self.transactions_repository.create(transaction, 'release', db)
+
+    def get_inventory_history(self,
+                              product_id: int,
+                              type: str,
+                              start_date: datetime,
+                              end_date: datetime,
+                              automated: bool,
+                              db: Session):
+        history = self.transactions_repository.get_inventory_history(product_id, type, start_date, end_date, automated,
+                                                                     db)
+        result = []
+        for transaction, detail, product in history:
+            result.append(InventoryHistoryResponse(
+                product_name=product.name,
+                type=transaction.type,
+                previous_stock=detail.previous_stock,
+                current_stock=detail.current_stock,
+                timestamp=transaction.timestamp,
+                automated=transaction.automated
+            ))
+        return result
