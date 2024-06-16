@@ -6,6 +6,7 @@ class ProductBase(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
     category: Optional[str] = None
+    stock: Optional[int] = None
 
 
 class ProductUpdate(ProductBase):
