@@ -6,7 +6,8 @@ from sqlalchemy.orm import Session
 from app.api.v1.endpoints.apple_classification_controller import apple_classification_service
 from app.db.session import get_db
 from app.repositories.transactions_repository import TransactionsRepository
-from app.schemas.transactions import TransactionsDetailWithProduct, Transactions, TransactionsCreate
+from app.schemas.transactions import TransactionsDetailWithProduct, Transactions, TransactionsCreate, \
+    InventoryHistoryResponse
 from app.services.transactions_service import TransactionsService
 
 router = APIRouter()
@@ -28,7 +29,6 @@ def get_transaction_details(transaction_id: int, db: Session = Depends(get_db)):
 
 @router.post("/store")
 def store_transaction(transaction: list[TransactionsCreate], db: Session = Depends(get_db)):
-    print(transaction)
     try:
         new_transaction = transactions_service.store_transaction(transaction, db)
         return 'success'
@@ -47,3 +47,15 @@ def release_transaction(transaction: list[TransactionsCreate], db: Session = Dep
         raise e
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/history/{product_id}", response_model=list[InventoryHistoryResponse])
+def get_inventory_history(
+    product_id: int,
+    db: Session = Depends(get_db),
+    type: str = Query(None),
+    start_date: datetime = Query(None),
+    end_date: datetime = Query(None),
+    automated: bool = Query(None)
+):
+    return transactions_service.get_inventory_history(product_id, type, start_date, end_date, automated, db)
