@@ -467,16 +467,19 @@ def main():
     # 대시보드 모드 선택
     st.sidebar.header("대시보드 선택")
     dashboard_mode = st.sidebar.selectbox("온습도 or 재고", ["Stock Change", "Temperature and Humidity Change"])
-    if dashboard_mode == 'Stock Change':
-        st.sidebar.header("재고 변화")
-        mode = st.sidebar.selectbox("일별 or 기간별", ["Daily Stock Changes", "Periodic Stock Changes"])
+    try:
+        if dashboard_mode == 'Stock Change':
+            st.sidebar.header("재고 변화")
+            mode = st.sidebar.selectbox("일별 or 기간별", ["Daily Stock Changes", "Periodic Stock Changes"])
 
-        if mode == "Daily Stock Changes":
-            daily_stock_changes()
-        elif mode == "Periodic Stock Changes":
-            periodic_stock_changes()
-    else:
-        temperature_humidity_changes()
+            if mode == "Daily Stock Changes":
+                daily_stock_changes()
+            elif mode == "Periodic Stock Changes":
+                periodic_stock_changes()
+        else:
+            temperature_humidity_changes()
+    except Exception:
+        st.error(f"대시보드 생성 중 오류가 발생했습니다. 데이터베이스 연동에 실패하였거나 불러올 데이터가 없습니다.")
 
 
 if __name__ == "__main__":
