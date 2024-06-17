@@ -51,6 +51,7 @@ class TransactionsRepository:
         try:
             transactions = Transactions(type='store', quantity=1, variation=apple.variation, automated=True,
                                         memo="IAM 시스템에 의해 자동으로 입고된 품목입니다.")
+            transactions.timestamp = datetime.now(tz=pytz.timezone('Asia/Seoul')).replace(microsecond=0)
             db.add(transactions)
             db.flush()
             product = db.query(Products).filter(Products.id == apple.product_id).first()
