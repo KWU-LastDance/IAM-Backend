@@ -32,7 +32,6 @@ def generate_forecast(series, order):
 
 # 온도 습도 변화
 def temperature_humidity_changes():
-    # TODO: 데이터 수집은 수정필요
     url = 'http://backend:8000/monitoring-data'
     try:
         response = requests.get(url)
@@ -130,7 +129,6 @@ def temperature_humidity_changes():
 
 # 일간 변화를 시각화
 def daily_stock_changes():
-    # TODO: 데이터 수집은 수정필요
     url = 'http://backend:8000/transactions/history'
     data_list = []
 
