@@ -20,7 +20,7 @@ monitoring_service = MonitoringService(monitoring_repository)
 def create_data():
     temperature = 2 + round(random(), 3)
     humidity = 92 + round(random(), 3)
-    timestamp = datetime.now().replace(microsecond=0)
+    timestamp = datetime.now(tz=pytz.timezone('Asia/Seoul')).replace(microsecond=0)
     return temperature, humidity, timestamp
 
 
