@@ -159,14 +159,12 @@ def daily_stock_changes():
     # 선택한 날짜의 재고 데이터
     selected_date_data = data[data['date'] == selected_date]
 
+    lastest_date=selected_date + timedelta(days=1)
     # 선택한 날짜의 각 품질별 마지막 재고 값 추출 (선택한 날짜 포함)
-    latest_stock_data = data[data['timestamp'] <= pd.to_datetime(selected_date)].sort_values(
-        'timestamp').drop_duplicates('quality', keep='last')
+    latest_stock_data = data[data['timestamp'] <= pd.to_datetime(lastest_date)].sort_values('timestamp').drop_duplicates('quality', keep='last')
 
     # 전날 데이터 추출 (선택한 날짜 제외)
-    previous_date = selected_date - timedelta(days=1)
-    previous_stock_data = data[data['timestamp'] <= pd.to_datetime(previous_date)].sort_values(
-        'timestamp').drop_duplicates('quality', keep='last')
+    previous_stock_data = data[data['timestamp'] <= pd.to_datetime(selected_date)].sort_values('timestamp').drop_duplicates('quality', keep='last')
 
     # 현재 재고와 전날 재고 병합 및 비교
     stock_summary = pd.merge(
@@ -186,10 +184,10 @@ def daily_stock_changes():
 
     col1, col2, col3 = st.columns(3)
 
-    # 특상, 상, 보통 품질에 해당하는 데이터 추출 및 표시
+    # 특상, 상, 중 품질에 해당하는 데이터 추출 및 표시
     special_data = stock_summary[stock_summary['quality'] == '사과 - 특상']
     good_data = stock_summary[stock_summary['quality'] == '사과 - 상']
-    normal_data = stock_summary[stock_summary['quality'] == '사과 - 보통']
+    normal_data = stock_summary[stock_summary['quality'] == '사과 - 중']
 
     # 데이터가 비어있으면 0으로 비어있지 않으면 변화량 계산
     if not special_data.empty:
@@ -205,10 +203,10 @@ def daily_stock_changes():
         col2.metric("사과 - 상", "0", "0")
 
     if not normal_data.empty:
-        col3.metric("사과 - 보통", f'{normal_data["current_stock_current"].values[0]}',
+        col3.metric("사과 - 중", f'{normal_data["current_stock_current"].values[0]}',
                     f'{normal_data["change"].values[0]}')
     else:
-        col3.metric("사과 - 보통", "0", "0")
+        col3.metric("사과 - 중", "0", "0")
 
     st.write('<hr style="margin: 10px 0;">', unsafe_allow_html=True)
 
@@ -267,12 +265,21 @@ def daily_stock_changes():
 # 기간별 변화를 시각화
 def periodic_stock_changes():
     # 데이터 수집은 수정 필요
-    file_paths = ['./apple.json', './apple1.json', './apple2.json']
+    url = 'http://backend:8000/transactions/history'
     data = []
-    for file_path in file_paths:
-        data.append(pd.read_json(file_path))
 
-    qualities = ['특상', '상', '보통']
+    try:
+        product_id = ['/1', '/2', '/3']
+        for pid in product_id:
+            response = requests.get(url + pid)
+            response.raise_for_status()  # 요청이 성공했는지 확인
+            tmp = response.json()
+            data.append(pd.DataFrame(tmp))
+    except requests.exceptions.RequestException as e:
+        st.error(f"API 요청 중 오류가 발생했습니다: {e}")
+        return
+
+    qualities = ['특상', '상', '중']
     for i, df in enumerate(data):
         df['quality'] = qualities[i]
 
@@ -307,7 +314,7 @@ def periodic_stock_changes():
     with col1:
         # 선택한 날짜 범위에 따른 품질별 사과 갯수 변화 시각화
         st.subheader("Stock Change")
-        filtered_data_melt = filtered_store_data.melt(id_vars='date', value_vars=['특상', '상', '보통'], var_name='quality',
+        filtered_data_melt = filtered_store_data.melt(id_vars='date', value_vars=['특상', '상', '중'], var_name='quality',
                                                       value_name='quantity')
         line_chart = alt.Chart(filtered_data_melt).mark_line().encode(
             x=alt.X('date:T', title='날짜'),
@@ -321,7 +328,7 @@ def periodic_stock_changes():
 
     # 품질별 재고 가장 많은날 구하기
     peak_days = []
-    for quality in ['특상', '상', '보통']:
+    for quality in ['특상', '상', '중']:
         peak_day = filtered_store_data.loc[filtered_store_data[quality].idxmax(), ['date', quality]]
         peak_days.append({'quality': quality, 'date': peak_day['date'], 'quantity': peak_day[quality]})
 
@@ -341,10 +348,10 @@ def periodic_stock_changes():
         col2.altair_chart(peak_chart, use_container_width=True)
 
     # 입고와 출고 시각화
-    store_data_melt = filtered_store_data.melt(id_vars='date', value_vars=['특상', '상', '보통'], var_name='quality',
+    store_data_melt = filtered_store_data.melt(id_vars='date', value_vars=['특상', '상', '중'], var_name='quality',
                                                value_name='quantity')
     store_data_melt['type'] = '입고'
-    release_data_melt = filtered_release_data.melt(id_vars='date', value_vars=['특상', '상', '보통'], var_name='quality',
+    release_data_melt = filtered_release_data.melt(id_vars='date', value_vars=['특상', '상', '중'], var_name='quality',
                                                    value_name='quantity')
     release_data_melt['type'] = '출고'
 
@@ -377,9 +384,9 @@ def periodic_stock_changes():
         col2.altair_chart(movement_chart, use_container_width=True)
 
     with col3:
-        # 입고 시각화 - 보통
-        st.subheader("Stock Movement - 보통")
-        movement_chart = alt.Chart(store_data_melt[store_data_melt['quality'] == '보통']).mark_bar().encode(
+        # 입고 시각화 - 중
+        st.subheader("Stock Movement - 중")
+        movement_chart = alt.Chart(store_data_melt[store_data_melt['quality'] == '중']).mark_bar().encode(
             x=alt.X('date:T', title='날짜'),
             y=alt.Y('quantity:Q', title='수량'),
             color=alt.Color('type:N', scale=alt.Scale(domain=['입고'], range=['#1f77b4'])),
@@ -418,9 +425,9 @@ def periodic_stock_changes():
         col2.altair_chart(movement_chart, use_container_width=True)
 
     with col3:
-        # 출고 시각화 - 보통
-        st.subheader("Stock Movement - 보통")
-        movement_chart = alt.Chart(release_data_melt[release_data_melt['quality'] == '보통']).mark_bar().encode(
+        # 출고 시각화 - 중
+        st.subheader("Stock Movement - 중")
+        movement_chart = alt.Chart(release_data_melt[release_data_melt['quality'] == '중']).mark_bar().encode(
             x=alt.X('date:T', title='날짜'),
             y=alt.Y('quantity:Q', title='수량'),
             color=alt.Color('type:N', scale=alt.Scale(domain=['출고'], range=['#ff7f0e'])),
@@ -478,8 +485,11 @@ def main():
                 periodic_stock_changes()
         else:
             temperature_humidity_changes()
-    except Exception:
+    except Exception as e:
         st.error(f"대시보드 생성 중 오류가 발생했습니다. 데이터베이스 연동에 실패하였거나 불러올 데이터가 없습니다.")
+        st.error(e)
+        import traceback
+        st.error(traceback.format_exc())
 
 
 if __name__ == "__main__":
